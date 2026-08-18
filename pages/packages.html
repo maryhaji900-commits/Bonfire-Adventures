@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Packages — Bonfire Adventures</title>
+<meta name="description" content="Browse the full Bonfire Adventures package catalogue. Filter by destination, region, experience, budget, duration and traveller type.">
+<link rel="canonical" href="https://example.com/pages/packages.html">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body id="page-packages">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="../index.html"><img src="../assets/logos/bonfire-logo.svg" alt="Bonfire Adventures logo" class="brand-logo"> Bonfire Adventures</a>
+    <nav class="main-nav" aria-label="Primary">
+      <a href="destinations.html">Destinations</a>
+      <a href="packages.html">Packages</a>
+      <a href="find-your-trip.html">Find Your Trip</a>
+      <a href="hotels.html">Hotels &amp; B&amp;Bs</a>
+      <a href="deals.html">Deals</a>
+      <a href="compare.html">Compare <span class="compare-badge" data-compare-count>0</span></a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="header-actions">
+      <div class="header-search">
+        <input type="search" placeholder="Search Kenya…" aria-label="Global search" data-global-search>
+        <div class="gs-results" hidden data-global-search-results></div>
+      </div>
+      <a class="btn btn-whatsapp btn-sm" data-whatsapp data-message="Hi, I'd like to speak with a Travel Advisor." target="_blank" rel="noopener"><span class="long">Advisor</span> 💬</a>
+      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="page-hero">
+    <div class="container">
+      <div class="breadcrumbs" style="color:rgba(250,247,239,.7);"><a href="../index.html" style="color:rgba(250,247,239,.9);">Home</a> / Packages</div>
+      <h1 id="page-title">Packages</h1>
+      <p id="page-sub">Safaris, beach holidays, honeymoons and group trips — all from one Bonfire inventory.</p>
+    </div>
+  </div>
+
+  <div class="container section" id="list-view">
+    <div class="layout-split">
+      <aside class="filters" aria-label="Filter packages">
+        <h4>Destination</h4>
+        <div class="filter-group"><select id="f-destination" data-analytics="filter-destination"><option value="">All destinations</option></select></div>
+        <h4>Region</h4>
+        <div class="filter-group"><select id="f-region" data-analytics="filter-region"><option value="">All regions</option></select></div>
+        <h4>Experience</h4>
+        <div class="filter-group" id="f-experience"></div>
+        <h4>Budget</h4>
+        <div class="filter-group"><select id="f-budget"><option value="">Any budget</option></select></div>
+        <h4>Duration</h4>
+        <div class="filter-group"><select id="f-duration">
+          <option value="">Any duration</option>
+          <option value="day">Day trip</option>
+          <option value="1-2">1–2 nights</option>
+          <option value="3-4">3–4 nights</option>
+          <option value="5+">5+ nights</option>
+        </select></div>
+        <h4>Traveller Type</h4>
+        <div class="filter-group"><select id="f-traveller">
+          <option value="">Anyone</option>
+          <option value="Solo">Solo</option>
+          <option value="Couples">Couples</option>
+          <option value="Family">Family</option>
+          <option value="Group">Group</option>
+          <option value="Corporate">Corporate</option>
+        </select></div>
+        <button class="btn btn-ghost btn-sm" id="f-clear" style="width:100%;justify-content:center;">Clear filters</button>
+      </aside>
+
+      <div>
+        <div class="section-head" style="margin-bottom:16px;">
+          <p id="result-count" style="margin:0;font-size:.9rem;color:rgba(22,36,28,.6);"></p>
+        </div>
+        <div class="card-grid" data-package-results></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container section" id="detail-view" hidden>
+    <div class="breadcrumbs"><a href="../index.html">Home</a> / <a href="packages.html">Packages</a> / <span data-detail-crumb></span></div>
+    <div id="detail-content"></div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© <span data-year></span> Bonfire Adventures. Demo build — prices &amp; availability are sample data.</span>
+      <a href="../index.html" style="color:rgba(250,247,239,.75);">Back to home</a>
+    </div>
+  </div>
+</footer>
+
+<a class="fab-whatsapp" data-whatsapp data-message="Hi, I'd like help planning a trip." target="_blank" rel="noopener" aria-label="Chat on WhatsApp">💬</a>
+
+<script src="../data.js"></script>
+<script src="../script.js"></script>
+<script>
+(function () {
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+
+  function populateSelect(sel, items, valueFn, labelFn) {
+    items.forEach(function (i) {
+      const o = document.createElement('option');
+      o.value = valueFn(i); o.textContent = labelFn(i);
+      sel.appendChild(o);
+    });
+  }
+
+  populateSelect(document.getElementById('f-destination'), BONFIRE_DATA.DESTINATIONS, function (d) { return d.id; }, function (d) { return d.name; });
+  const regions = Array.from(new Set(BONFIRE_DATA.PACKAGES.map(function (p) { return p.region; })));
+  populateSelect(document.getElementById('f-region'), regions, function (r) { return r; }, function (r) { return r; });
+  populateSelect(document.getElementById('f-budget'), BONFIRE_DATA.BUDGET_BANDS, function (b) { return b.id; }, function (b) { return b.label; });
+
+  const expWrap = document.getElementById('f-experience');
+  BONFIRE_DATA.EXPERIENCES.forEach(function (e) {
+    const label = document.createElement('label');
+    label.innerHTML = '<input type="checkbox" value="' + e + '" data-exp-filter> ' + e;
+    expWrap.appendChild(label);
+  });
+
+  function durationMatch(pkg, key) {
+    if (!key) return true;
+    const d = pkg.duration.toLowerCase();
+    if (key === 'day') return d.indexOf('1 day') !== -1 && d.indexOf('night') === -1;
+    if (key === '1-2') return /1 night|2 nights?/.test(d);
+    if (key === '3-4') return /3 nights?|4 nights?/.test(d);
+    if (key === '5+') return /[5-9] nights?|\d{2}\+? nights?/.test(d);
+    return true;
+  }
+
+  function applyFilters() {
+    const dest = document.getElementById('f-destination').value;
+    const region = document.getElementById('f-region').value;
+    const budget = document.getElementById('f-budget').value;
+    const duration = document.getElementById('f-duration').value;
+    const traveller = document.getElementById('f-traveller').value;
+    const exps = Array.from(document.querySelectorAll('[data-exp-filter]:checked')).map(function (c) { return c.value; });
+
+    const results = BONFIRE_DATA.PACKAGES.filter(function (p) {
+      if (dest && p.destinationId !== dest) return false;
+      if (region && p.region !== region) return false;
+      if (budget && p.budgetBand !== budget) return false;
+      if (traveller && p.travellerType.indexOf(traveller) === -1) return false;
+      if (exps.length && !exps.some(function (e) { return p.experiences.indexOf(e) !== -1; })) return false;
+      if (!durationMatch(p, duration)) return false;
+      return true;
+    });
+
+    const resultWrap = document.querySelector('[data-package-results]');
+    document.getElementById('result-count').textContent = results.length + ' package' + (results.length === 1 ? '' : 's') + ' found';
+    if (!results.length) {
+      resultWrap.innerHTML = '';
+      resultWrap.parentElement.appendChild(Object.assign(document.createElement('div'), { innerHTML: Bonfire.emptyStateHTML({ title: 'No packages match those filters', text: 'Try widening your destination, budget or dates — or ask an Advisor to build something custom.', altHref: 'find-your-trip.html', altLabel: 'Try Find Your Trip' }) }));
+    } else {
+      resultWrap.innerHTML = results.map(Bonfire.packageCardHTML).join('');
+    }
+    Bonfire.initWhatsAppButtons();
+  }
+
+  function renderDetail(pkg) {
+    const dest = BONFIRE_DATA.getDestinationById(pkg.destinationId);
+    document.getElementById('page-title').textContent = pkg.name;
+    document.getElementById('page-sub').textContent = pkg.desc;
+    document.querySelector('[data-detail-crumb]').textContent = pkg.name;
+    document.title = pkg.name + ' — Bonfire Adventures';
+    document.getElementById('list-view').hidden = true;
+    document.getElementById('detail-view').hidden = false;
+
+    document.getElementById('detail-content').innerHTML =
+      '<div class="layout-split">' +
+        '<div style="grid-column:1/-1;display:grid;grid-template-columns:1.3fr 1fr;gap:32px;">' +
+          '<div>' +
+            '<div class="card-media" style="aspect-ratio:16/9;border-radius:var(--radius);margin-bottom:20px;">' +
+              '<span class="badge">' + pkg.duration + '</span><span class="rating">★ ' + pkg.rating + ' (' + pkg.reviewCount + ' reviews)</span>' +
+            '</div>' +
+            '<h2>Overview</h2><p>' + pkg.desc + '</p>' +
+            '<h3>Inclusions</h3><ul style="list-style:disc;padding-left:20px;margin-bottom:16px;">' + pkg.inclusions.map(function (i) { return '<li>' + i + '</li>'; }).join('') + '</ul>' +
+            '<h3>Exclusions</h3><ul style="list-style:disc;padding-left:20px;margin-bottom:16px;">' + pkg.exclusions.map(function (i) { return '<li>' + i + '</li>'; }).join('') + '</ul>' +
+            '<div class="card-tags">' + pkg.experiences.map(function (t) { return '<span>' + t + '</span>'; }).join('') + '</div>' +
+          '</div>' +
+          '<aside class="filters" style="position:sticky;top:92px;">' +
+            '<div class="price" style="font-size:1.4rem;margin-bottom:4px;">' + Bonfire.formatKES(pkg.price) + ' <small>' + pkg.priceBasis + '</small></div>' +
+            '<p style="font-size:.85rem;color:rgba(22,36,28,.6);margin-bottom:16px;">Sample pricing — request a quote to confirm live rates.</p>' +
+            '<p style="font-size:.86rem;"><strong>Destination:</strong> ' + (dest ? dest.name : pkg.region) + '</p>' +
+            '<p style="font-size:.86rem;"><strong>Accommodation:</strong> ' + pkg.accommodation + '</p>' +
+            '<p style="font-size:.86rem;"><strong>Transport:</strong> ' + pkg.transport + '</p>' +
+            '<p style="font-size:.86rem;"><strong>Meals:</strong> ' + pkg.meals + '</p>' +
+            '<a class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px;" href="find-your-trip.html?bookingProduct=' + encodeURIComponent(pkg.name) + '" data-analytics="booking-start">Request Booking</a>' +
+            '<a class="btn btn-whatsapp" style="width:100%;justify-content:center;margin-top:10px;" data-whatsapp data-product="' + pkg.name + '" data-destination="' + (dest ? dest.name : pkg.region) + '" target="_blank" rel="noopener" data-analytics="request-quote">Request Quote on WhatsApp</a>' +
+          '</aside>' +
+        '</div>' +
+      '</div>';
+    Bonfire.initWhatsAppButtons();
+  }
+
+  if (id) {
+    const pkg = BONFIRE_DATA.getPackageById(id);
+    if (pkg) {
+      renderDetail(pkg);
+    } else {
+      document.getElementById('detail-view').hidden = false;
+      document.getElementById('list-view').hidden = true;
+      document.getElementById('detail-content').innerHTML = Bonfire.emptyStateHTML({ title: 'Package not found', text: 'That package may have been renamed or removed.', altHref: 'packages.html', altLabel: 'Browse all packages' });
+    }
+  } else {
+    ['f-destination', 'f-region', 'f-budget', 'f-duration', 'f-traveller'].forEach(function (fid) {
+      document.getElementById(fid).addEventListener('change', applyFilters);
+    });
+    expWrap.addEventListener('change', applyFilters);
+    document.getElementById('f-clear').addEventListener('click', function () {
+      document.querySelectorAll('.filters select').forEach(function (s) { s.value = ''; });
+      document.querySelectorAll('[data-exp-filter]').forEach(function (c) { c.checked = false; });
+      applyFilters();
+    });
+    // allow deep link with pre-selected experience e.g. ?experience=Beach
+    const preExp = params.get('experience');
+    if (preExp) {
+      const cb = document.querySelector('[data-exp-filter][value="' + preExp + '"]');
+      if (cb) cb.checked = true;
+    }
+    applyFilters();
+  }
+})();
+</script>
+</body>
+</html>

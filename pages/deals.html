@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deals — Bonfire Adventures</title>
+<meta name="description" content="Hot deals, last-minute offers, seasonal and group discounts across Bonfire Adventures' packages, hotels and B&Bs. Expired deals are never shown as active.">
+<link rel="canonical" href="https://example.com/pages/deals.html">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body id="page-deals">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="../index.html"><img src="../assets/logos/bonfire-logo.svg" alt="Bonfire Adventures logo" class="brand-logo"> Bonfire Adventures</a>
+    <nav class="main-nav" aria-label="Primary">
+      <a href="destinations.html">Destinations</a>
+      <a href="packages.html">Packages</a>
+      <a href="find-your-trip.html">Find Your Trip</a>
+      <a href="hotels.html">Hotels &amp; B&amp;Bs</a>
+      <a href="deals.html">Deals</a>
+      <a href="compare.html">Compare <span class="compare-badge" data-compare-count>0</span></a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="header-actions">
+      <div class="header-search">
+        <input type="search" placeholder="Search Kenya…" aria-label="Global search" data-global-search>
+        <div class="gs-results" hidden data-global-search-results></div>
+      </div>
+      <a class="btn btn-whatsapp btn-sm" data-whatsapp data-message="Hi, I'd like to speak with a Travel Advisor." target="_blank" rel="noopener"><span class="long">Advisor</span> 💬</a>
+      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="page-hero">
+    <div class="container">
+      <div class="breadcrumbs" style="color:rgba(250,247,239,.7);"><a href="../index.html" style="color:rgba(250,247,239,.9);">Home</a> / Deals</div>
+      <h1>Deals</h1>
+      <p>Time-boxed offers from the same master inventory as Packages and Hotels. Expired deals are automatically hidden.</p>
+    </div>
+  </div>
+
+  <div class="container section">
+    <div class="chip-row" id="deal-chips" style="margin-bottom:26px;"></div>
+    <div class="section-head" style="margin-bottom:16px;">
+      <p id="result-count" style="margin:0;font-size:.9rem;color:rgba(22,36,28,.6);"></p>
+    </div>
+    <div class="card-grid" data-deal-results></div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© <span data-year></span> Bonfire Adventures. Demo build — prices &amp; availability are sample data.</span>
+      <a href="../index.html" style="color:rgba(250,247,239,.75);">Back to home</a>
+    </div>
+  </div>
+</footer>
+
+<a class="fab-whatsapp" data-whatsapp data-message="Hi, I'd like help with a deal." target="_blank" rel="noopener" aria-label="Chat on WhatsApp">💬</a>
+
+<script src="../data.js"></script>
+<script src="../script.js"></script>
+<script>
+(function () {
+  const params = new URLSearchParams(location.search);
+  let activeCat = params.get('category') || '';
+  const categories = Array.from(new Set(BONFIRE_DATA.DEALS.map(function (d) { return d.category; })));
+
+  function renderChips() {
+    const wrap = document.getElementById('deal-chips');
+    const all = document.createElement('button');
+    all.type = 'button'; all.className = 'chip' + (activeCat ? '' : ' is-active'); all.textContent = 'All Active Deals';
+    all.addEventListener('click', function () { activeCat = ''; renderChips(); renderGrid(); });
+    wrap.innerHTML = '';
+    wrap.appendChild(all);
+    categories.forEach(function (cat) {
+      const chip = document.createElement('button');
+      chip.type = 'button'; chip.className = 'chip' + (activeCat === cat ? ' is-active' : ''); chip.textContent = cat;
+      chip.addEventListener('click', function () { activeCat = cat; renderChips(); renderGrid(); });
+      wrap.appendChild(chip);
+    });
+  }
+
+  function renderGrid() {
+    let deals = BONFIRE_DATA.getActiveDeals();
+    if (activeCat) deals = deals.filter(function (d) { return d.category === activeCat; });
+    document.getElementById('result-count').textContent = deals.length + ' active deal' + (deals.length === 1 ? '' : 's');
+    const wrap = document.querySelector('[data-deal-results]');
+    wrap.innerHTML = deals.length
+      ? deals.map(Bonfire.dealCardHTML).join('')
+      : Bonfire.emptyStateHTML({ title: 'No active deals in this category right now', text: 'Deals rotate often — check back soon, or ask an Advisor about upcoming offers.', altHref: 'deals.html', altLabel: 'See all active deals', waMessage: 'Hi, are there any upcoming deals for this category?' });
+    Bonfire.initWhatsAppButtons();
+  }
+
+  renderChips();
+  renderGrid();
+})();
+</script>
+</body>
+</html>

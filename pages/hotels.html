@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hotels &amp; B&amp;Bs — Bonfire Adventures</title>
+<meta name="description" content="Search Kenya hotels and B&amp;Bs by region, town and area, or search anywhere. Book accommodation-only or connect it with a full package.">
+<link rel="canonical" href="https://example.com/pages/hotels.html">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body id="page-hotels">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="../index.html"><img src="../assets/logos/bonfire-logo.svg" alt="Bonfire Adventures logo" class="brand-logo"> Bonfire Adventures</a>
+    <nav class="main-nav" aria-label="Primary">
+      <a href="destinations.html">Destinations</a>
+      <a href="packages.html">Packages</a>
+      <a href="find-your-trip.html">Find Your Trip</a>
+      <a href="hotels.html">Hotels &amp; B&amp;Bs</a>
+      <a href="deals.html">Deals</a>
+      <a href="compare.html">Compare <span class="compare-badge" data-compare-count>0</span></a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="header-actions">
+      <div class="header-search">
+        <input type="search" placeholder="Search Kenya…" aria-label="Global search" data-global-search>
+        <div class="gs-results" hidden data-global-search-results></div>
+      </div>
+      <a class="btn btn-whatsapp btn-sm" data-whatsapp data-message="Hi, I'd like to speak with a Travel Advisor." target="_blank" rel="noopener"><span class="long">Advisor</span> 💬</a>
+      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="page-hero">
+    <div class="container">
+      <div class="breadcrumbs" style="color:rgba(250,247,239,.7);"><a href="../index.html" style="color:rgba(250,247,239,.9);">Home</a> / Hotels &amp; B&amp;Bs</div>
+      <h1 id="page-title">Hotels &amp; B&amp;Bs</h1>
+      <p id="page-sub">Search anywhere, or narrow down region → town → area → property. Accommodation-only bookings welcome.</p>
+    </div>
+  </div>
+
+  <div class="container section" id="list-view">
+    <div class="chip-row" style="margin-bottom:20px;">
+      <button type="button" class="chip is-active" id="search-anywhere">Search Anywhere</button>
+      <span style="align-self:center;font-size:.82rem;color:rgba(22,36,28,.55);">or pick a region below</span>
+    </div>
+
+    <div class="region-grid" id="region-grid" style="margin-bottom:22px;"></div>
+    <div class="chip-row" id="town-row" style="margin-bottom:12px;"></div>
+    <div class="chip-row" id="area-row" style="margin-bottom:26px;"></div>
+
+    <div class="layout-split">
+      <aside class="filters" aria-label="Filter hotels">
+        <h4>Check-in / Check-out</h4>
+        <div class="filter-group"><input type="date" id="f-checkin"></div>
+        <div class="filter-group"><input type="date" id="f-checkout"></div>
+        <h4>Guests / Rooms</h4>
+        <div class="filter-group"><input type="number" id="f-guests" min="1" value="2" placeholder="Guests"></div>
+        <div class="filter-group"><input type="number" id="f-rooms" min="1" value="1" placeholder="Rooms"></div>
+        <h4>Price (from, per night)</h4>
+        <div class="filter-group"><select id="f-price">
+          <option value="">Any price</option>
+          <option value="10000">Under KSh 10,000</option>
+          <option value="15000">Under KSh 15,000</option>
+          <option value="999999">Above KSh 15,000</option>
+        </select></div>
+        <h4>Type</h4>
+        <div class="filter-group"><select id="f-type"><option value="">Any type</option></select></div>
+        <h4>Rating</h4>
+        <div class="filter-group"><select id="f-rating">
+          <option value="">Any rating</option>
+          <option value="4.5">4.5+</option>
+          <option value="4">4.0+</option>
+        </select></div>
+        <h4>Amenities</h4>
+        <div class="filter-group" id="f-amenities"></div>
+        <button class="btn btn-ghost btn-sm" id="f-clear" style="width:100%;justify-content:center;">Clear filters</button>
+      </aside>
+
+      <div>
+        <div class="section-head" style="margin-bottom:16px;">
+          <p id="result-count" style="margin:0;font-size:.9rem;color:rgba(22,36,28,.6);"></p>
+        </div>
+        <div class="card-grid" data-hotel-results></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container section" id="detail-view" hidden>
+    <div class="breadcrumbs"><a href="../index.html">Home</a> / <a href="hotels.html">Hotels &amp; B&amp;Bs</a> / <span data-detail-crumb></span></div>
+    <div id="detail-content"></div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© <span data-year></span> Bonfire Adventures. Demo build — prices &amp; availability are sample data.</span>
+      <a href="../index.html" style="color:rgba(250,247,239,.75);">Back to home</a>
+    </div>
+  </div>
+</footer>
+
+<a class="fab-whatsapp" data-whatsapp data-message="Hi, I'd like help finding a hotel or B&amp;B." target="_blank" rel="noopener" aria-label="Chat on WhatsApp">💬</a>
+
+<script src="../data.js"></script>
+<script src="../script.js"></script>
+<script>
+(function () {
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  let state = { region: '', town: '', area: '' };
+
+  const AMENITY_LIST = ["Pool","Wi-Fi","Breakfast","Parking","Beach access","Gym","Spa","Family friendly","Couples","Business"];
+
+  function renderRegionGrid() {
+    const wrap = document.getElementById('region-grid');
+    wrap.innerHTML = '';
+    Object.keys(BONFIRE_DATA.REGIONS).forEach(function (region) {
+      const count = BONFIRE_DATA.HOTELS.filter(function (h) { return h.region === region; }).length;
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'region-tile' + (state.region === region ? ' is-active' : '');
+      btn.innerHTML = region + '<span class="count">' + count + ' propert' + (count === 1 ? 'y' : 'ies') + '</span>';
+      btn.addEventListener('click', function () {
+        state.region = state.region === region ? '' : region; state.town = ''; state.area = '';
+        renderRegionGrid(); renderTowns(); applyFilters();
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  function renderTowns() {
+    const row = document.getElementById('town-row');
+    row.innerHTML = '';
+    document.getElementById('area-row').innerHTML = '';
+    if (!state.region) return;
+    const towns = Object.keys(BONFIRE_DATA.REGIONS[state.region].towns);
+    // featured towns first
+    towns.sort(function (a, b) {
+      const fa = BONFIRE_DATA.FEATURED_TOWNS.indexOf(a) !== -1, fb = BONFIRE_DATA.FEATURED_TOWNS.indexOf(b) !== -1;
+      return (fb - fa);
+    });
+    towns.forEach(function (town) {
+      const chip = document.createElement('button');
+      chip.type = 'button'; chip.className = 'chip' + (state.town === town ? ' is-active' : '');
+      chip.textContent = town + (BONFIRE_DATA.FEATURED_TOWNS.indexOf(town) !== -1 ? ' ★' : '');
+      chip.addEventListener('click', function () {
+        state.town = state.town === town ? '' : town; state.area = '';
+        renderTowns(); renderAreas(); applyFilters();
+      });
+      row.appendChild(chip);
+    });
+    renderAreas();
+  }
+
+  function renderAreas() {
+    const row = document.getElementById('area-row');
+    row.innerHTML = '';
+    if (!state.region || !state.town) return;
+    const areas = BONFIRE_DATA.REGIONS[state.region].towns[state.town];
+    areas.forEach(function (area) {
+      const chip = document.createElement('button');
+      chip.type = 'button'; chip.className = 'chip' + (state.area === area ? ' is-active' : '');
+      chip.textContent = area;
+      chip.addEventListener('click', function () {
+        state.area = state.area === area ? '' : area;
+        renderAreas(); applyFilters();
+      });
+      row.appendChild(chip);
+    });
+  }
+
+  function populateSelect(sel, items) {
+    Array.from(new Set(items)).forEach(function (i) {
+      const o = document.createElement('option'); o.value = i; o.textContent = i; sel.appendChild(o);
+    });
+  }
+  populateSelect(document.getElementById('f-type'), BONFIRE_DATA.HOTELS.map(function (h) { return h.type; }));
+
+  const amenWrap = document.getElementById('f-amenities');
+  AMENITY_LIST.forEach(function (a) {
+    const label = document.createElement('label');
+    label.innerHTML = '<input type="checkbox" value="' + a + '" data-amenity-filter> ' + a;
+    amenWrap.appendChild(label);
+  });
+
+  document.getElementById('search-anywhere').addEventListener('click', function () {
+    state = { region: '', town: '', area: '' };
+    renderRegionGrid(); renderTowns();
+    applyFilters();
+  });
+
+  function applyFilters() {
+    const priceMax = document.getElementById('f-price').value;
+    const type = document.getElementById('f-type').value;
+    const rating = parseFloat(document.getElementById('f-rating').value) || 0;
+    const amenities = Array.from(document.querySelectorAll('[data-amenity-filter]:checked')).map(function (c) { return c.value; });
+
+    const results = BONFIRE_DATA.HOTELS.filter(function (h) {
+      if (state.region && h.region !== state.region) return false;
+      if (state.town && h.town !== state.town) return false;
+      if (state.area && h.area !== state.area) return false;
+      if (priceMax && h.priceFrom > Number(priceMax)) return false;
+      if (type && h.type !== type) return false;
+      if (rating && h.rating < rating) return false;
+      if (amenities.length && !amenities.every(function (a) { return h.amenities.indexOf(a) !== -1; })) return false;
+      return true;
+    });
+
+    const wrap = document.querySelector('[data-hotel-results]');
+    document.getElementById('result-count').textContent = results.length + ' propert' + (results.length === 1 ? 'y' : 'ies') + ' found';
+    wrap.innerHTML = results.length
+      ? results.map(Bonfire.hotelCardHTML).join('')
+      : Bonfire.emptyStateHTML({ title: 'No properties match yet', text: 'Try a broader region, fewer amenities, or ask an Advisor for hand-picked options.', altHref: 'hotels.html', altLabel: 'Search anywhere' });
+    Bonfire.initWhatsAppButtons();
+  }
+
+  ['f-price','f-type','f-rating'].forEach(function (fid) { document.getElementById(fid).addEventListener('change', applyFilters); });
+  amenWrap.addEventListener('change', applyFilters);
+  document.getElementById('f-clear').addEventListener('click', function () {
+    document.querySelectorAll('.filters select').forEach(function (s) { s.value = ''; });
+    document.querySelectorAll('[data-amenity-filter]').forEach(function (c) { c.checked = false; });
+    applyFilters();
+  });
+
+  function renderDetail(h) {
+    document.getElementById('page-title').textContent = h.name;
+    document.getElementById('page-sub').textContent = h.area + ', ' + h.town + ' — ' + h.region;
+    document.querySelector('[data-detail-crumb]').textContent = h.name;
+    document.title = h.name + ' — Bonfire Adventures';
+    document.getElementById('list-view').hidden = true;
+    document.getElementById('detail-view').hidden = false;
+
+    document.getElementById('detail-content').innerHTML =
+      '<div style="display:grid;grid-template-columns:1.3fr 1fr;gap:32px;">' +
+        '<div>' +
+          '<div class="card-media" style="aspect-ratio:16/9;border-radius:var(--radius);margin-bottom:20px;"><span class="badge">' + h.type + '</span><span class="rating">★ ' + h.rating + ' (' + h.reviewCount + ' reviews)</span></div>' +
+          '<h2>About this property</h2><p>' + h.desc + '</p>' +
+          '<h3>Amenities</h3><div class="card-tags" style="margin-bottom:20px;">' + h.amenities.map(function (a) { return '<span>' + a + '</span>'; }).join('') + '</div>' +
+          '<h3>Meal plan</h3><p>' + h.mealPlan + '</p>' +
+          '<h3>Policies</h3><p style="color:rgba(22,36,28,.65);font-size:.9rem;">Standard cancellation and check-in policies apply — confirm exact terms with your Travel Advisor before booking.</p>' +
+          '<h3>Map</h3><div style="background:var(--sand-lt);border:1px dashed var(--line);border-radius:var(--radius);padding:40px;text-align:center;color:rgba(22,36,28,.5);margin-bottom:20px;">Map placeholder — ' + h.area + ', ' + h.town + '</div>' +
+          '<h3>Connect this stay with</h3>' +
+          '<div class="chip-row"><a class="chip" href="find-your-trip.html">Transport</a><a class="chip" href="find-your-trip.html">SGR</a><a class="chip" href="find-your-trip.html">Flights</a><a class="chip" href="find-your-trip.html">Activities</a><a class="chip" href="packages.html">Full Holiday Package</a></div>' +
+        '</div>' +
+        '<aside class="filters" style="position:sticky;top:92px;">' +
+          '<div class="price" style="font-size:1.4rem;margin-bottom:4px;">' + Bonfire.formatKES(h.priceFrom) + ' <small>from · ' + h.priceBasis + '</small></div>' +
+          '<p style="font-size:.85rem;color:rgba(22,36,28,.6);margin-bottom:16px;">Sample pricing — confirm live rates and room availability with an Advisor.</p>' +
+          '<a class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;" href="find-your-trip.html" data-analytics="booking-start">Request Booking</a>' +
+          '<a class="btn btn-whatsapp" style="width:100%;justify-content:center;margin-top:10px;" data-whatsapp data-product="' + h.name + '" data-destination="' + h.town + '" target="_blank" rel="noopener" data-analytics="request-quote">Request Quote on WhatsApp</a>' +
+        '</aside>' +
+      '</div>';
+    Bonfire.initWhatsAppButtons();
+  }
+
+  if (id) {
+    const h = BONFIRE_DATA.getHotelById(id);
+    if (h) renderDetail(h);
+    else {
+      document.getElementById('detail-view').hidden = false;
+      document.getElementById('list-view').hidden = true;
+      document.getElementById('detail-content').innerHTML = Bonfire.emptyStateHTML({ title: 'Property not found', altHref: 'hotels.html', altLabel: 'Search hotels & B&Bs' });
+    }
+  } else {
+    renderRegionGrid();
+    renderTowns();
+    applyFilters();
+  }
+})();
+</script>
+</body>
+</html>
